@@ -296,6 +296,44 @@ extension AttributedContent {
         aString.append(self)
         return aString
     }
+    public func consoleString() -> String {
+        var aString = String()
+        aString.append(self)
+        return aString
+    }
+}
+extension String {
+    public mutating func append(_ aContent: AttributedContent, inheritAttrs: StringAttributesContainer = [:]) {
+        guard aContent.nestedContent.count > 0 else { return }
+        append(aContent.attributes)
+        let parentAttrs = inheritAttrs.merging(aContent.attributes, uniquingKeysWith: { _, new in new })
+        for (i, nested) in aContent.nestedContent.enumerated() {
+            switch nested {
+            case .string(let str): append(str)
+            case .attributedString(let aStr):
+                append(aStr, inheritAttrs: parentAttrs)
+                if i < aContent.nestedContent.count {
+                    append(parentAttrs)
+                }
+            case .image: continue
+            }
+        }
+        append("\\u{1b}[0m")
+    }
+    mutating func append(_ attrs: StringAttributesContainer) {
+        for (key, _) in attrs {
+            switch key {
+            case .backgroundColor: append("\\u{1b}[41m")
+            case .foregroundColor: append("\\u{1b}[33m")
+            case .underlineStyle: append("\\u{1b}[4m")
+            case .strikethroughStyle: append("\\u{1b}[9m")
+            case .font: append("\\u{1b}[1m")
+            case .textEffect: append("\\u{1b}[5m")
+            case .shadow: append("\\u{1b}[2m")
+            default: continue
+            }
+        }
+    }
 }
 extension NSMutableAttributedString {
     public func append(_ aContent: AttributedContent) {
