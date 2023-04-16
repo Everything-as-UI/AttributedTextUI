@@ -284,6 +284,12 @@ extension ForEach: AttributedText where Content: AttributedText {
 
 ///
 
+extension AttributedText {
+    public func makeContent() -> AttributedContent {
+        var interpolator = AttributedTextInterpolation(self)
+        return interpolator.build()
+    }
+}
 extension AttributedContent {
     public func nsAttributedString() -> NSAttributedString {
         let aString = NSMutableAttributedString()
